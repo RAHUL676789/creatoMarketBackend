@@ -14,6 +14,7 @@ module.exports.contentSchema = Joi.object({
     price:Joi.number().min(0),
     description:Joi.string(),
     url:Joi.string().required(),
-    title:Joi.string().required()
+    title:Joi.string().required(),
+    publicId:Joi.string().required()
 
 })

@@ -13,7 +13,7 @@ const cookieParser = require("cookie-parser")
 
 app.use(cors({
     origin:process.env.frontendurl,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"],
     credentials: true,
     exposedHeaders: ["set-cookie"],
   }))

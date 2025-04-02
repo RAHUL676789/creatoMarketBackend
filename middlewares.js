@@ -1,6 +1,7 @@
 const {userSchema} = require("./schema")
 const jwt = require("jsonwebtoken")
 const {contentSchema} = require("./schema")
+const contentModel = require("./models/contentSchema");
  
 // console.log(contentSchema)
 
@@ -20,6 +21,7 @@ module.exports.isLoggedIn = (req,res,next)=>{
    return res.status(400).json({message:"unauthorized user",success:false});
   }
   let validUser = jwt.verify(token,process.env.jwtsecret);
+  console.log(validUser);
   if(validUser){
     next();
   }
@@ -38,4 +40,24 @@ module.exports.contentScheaValidation = (req,res,next)=>{
   }
   next();
 
+}
+
+
+
+module.exports.isOwnerOfContent = async(req,res,next)=>{
+  const currUser = req.session.user._id;
+  console.log(currUser);
+  const {id} = req.body;
+  if(!id){
+    return res.status(400).json({message:"content id not found",success:false});
+  } 
+  const content = await contentModel.findById(id);
+  console.log(content);
+  if(!content){
+    return res.status(400).json({message:"content not found",success:false});
+  }
+  if(content.owner != currUser){
+    return res.status(400).json({message:"you are not owner of this content",success:false});
+  }
+  next();
 }

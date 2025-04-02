@@ -7,7 +7,12 @@ const contentSchema = new Schema({
     title: {
         type: String,
         required: true,
-        unique: true
+        unique: [true,"this title name is already exist"]
+    },
+    type:{
+        type:String,
+        required:[true,"this is required field"]
+
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
@@ -40,6 +45,10 @@ const contentSchema = new Schema({
     downLoads: {
         type: Number,
         default: 0
+    },
+    publicId:{
+        type:String,
+        required:true
     }
 })
 

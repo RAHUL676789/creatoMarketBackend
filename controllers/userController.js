@@ -10,7 +10,7 @@ module.exports.profile = async (req, res, next) => {
       return res.status(400).json({ message: "session expired please login again", success: false })
    }
    let validUser = jwt.verify(req.cookies.token, process.env.jwtsecret);
-   let user = await userModel.findById(validUser.id);
+   let user = await userModel.findById(validUser.id).populate("contents");
    if (!user) {
       return res.status(404).json({ message: "user not found", success: false });
    }
@@ -106,7 +106,7 @@ module.exports.resendOtp = async (req, res, next) => {
 
 module.exports.login = async (req, res, next) => {
    const { email, password } = req.body;
-   let user = await userModel.findOne({ email: email });
+   let user = await userModel.findOne({ email: email }).populate("contents");
    if (!user) {
       return res.status(404).json({ message: "user not found", success: false });
    }
