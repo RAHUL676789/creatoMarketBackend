@@ -1,7 +1,18 @@
 const contentModel = require("../models/contentSchema");
 const userSchema = require("../models/userSchema");
-const cloudinary = require('cloudinary').v2;
+const cloudinary = require('../utils/cloudinary.js');
 
+
+
+
+module.exports.getAll = async(req,res,next)=>{
+
+    const allContent = await contentModel.find({}).populate({
+        path:"owner",
+        select:"-password"
+    });
+    res.status(200).json({message:"all content",success:true,data:allContent})
+}
 
 
 module.exports.create = async(req,res,next)=>{
@@ -59,17 +70,42 @@ module.exports.deleteContent = async(req,res,next)=>{
    }
     const content = await contentModel.findByIdAndDelete(id);
     if (content.publicId) {
-        try {
-            await cloudinary.uploader.destroy(content.publicId);
-        } catch (error) {
-            console.error("Error deleting content from Cloudinary:", error);
-            return res.status(500).json({ message: "Failed to delete content from Cloudinary", success: false });
+        
+        let deleteResult =    await cloudinary.uploader.destroy(content.publicId);
+        if(deleteResult.result !== "ok"){
+            return res.status(400).json({message:"content not found",success:false});
+        }else{
+            return res.status(200).json({message:"content deleted",success:true,data:content});
         }
+        
+      
+    }else{
+        return res.status(400).json({message:"public id not found",success:false});
     }
   
-    if(!content){
-        return res.status(400).json({message:"content not found",success:false});
-    }
-    return res.status(200).json({message:"content deleted",success:true,data:content});
+   
 
 }
+
+
+
+
+module.exports.CancelContent = async(req,res,next)=>{
+ 
+    const {publicId} = req.body;
+
+    if(!publicId){
+        return res.status(400).json({message:"content id not found",success:false});
+    }
+
+   let cloudResult = await cloudinary.uploader.destroy(publicId)
+   if(cloudResult.result !== "ok"){
+    return res.status(400).json({message:"content not found",success:false});
+   }
+   res.status(200).json({message:"content deleted",success:true,data:cloudResult});
+    
+}
+
+
+
+

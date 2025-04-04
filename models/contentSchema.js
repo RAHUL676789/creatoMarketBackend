@@ -16,7 +16,7 @@ const contentSchema = new Schema({
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user"
+        ref: "User"
     },
     description: {
         type: String,
