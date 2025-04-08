@@ -1,5 +1,7 @@
 const contentModel = require("../models/contentSchema");
+const likeModel = require("../models/likeSchema.js");
 const userSchema = require("../models/userSchema");
+const { asynwrap } = require("../utils/asynwrap.js");
 const cloudinary = require('../utils/cloudinary.js');
 
 
@@ -10,6 +12,8 @@ module.exports.getAll = async(req,res,next)=>{
     const allContent = await contentModel.find({}).populate({
         path:"owner",
         select:"-password"
+    }).populate({
+        path:"likes"
     });
     res.status(200).json({message:"all content",success:true,data:allContent})
 }
@@ -109,3 +113,57 @@ module.exports.CancelContent = async(req,res,next)=>{
 
 
 
+
+
+
+
+
+// likeBuffer: { content: { liked: true/false, timer: setTimeout } }
+  let likeBuffer = {};
+
+module.exports.likes = async(req,res,next)=>{
+    
+    const {userId,content,likeStatus} = req.body;
+    console.log(req.body);
+  
+
+    if(!likeBuffer[content]){
+        likeBuffer[content] = {likeCount : likeStatus == true ? 1 : -1 ,time:null}
+    }else{
+        likeBuffer[content].likeCount += likeStatus == true ? 1 : -1  ;
+        clearTimeout(likeBuffer[content].timer)
+    }
+
+    likeBuffer[content].timer = setTimeout(async()=>{
+      try {
+        let result = await  updateDbLike(content,likeBuffer[content].likeCount);
+        if(result.success){
+        let like =    await likeModel.create({content,userId})
+        console.log(like)
+        let contentSave = await contentModel.findByIdAndUpdate(content,{$push:{likes:like._id}});
+        
+          
+        }else{
+            await likeModel.findOneAndDelete(content,userId);
+        }
+
+      } catch (error) {
+        console.log(error)
+      }
+        delete likeBuffer[content];
+    },2000)
+
+    return res.status(200).json({success:true});
+}
+
+
+const updateDbLike = async  (content,likeCount) => {
+     
+  try{
+    let result = await contentModel.findByIdAndUpdate(content,{$inc:{likeCount:likeCount}});
+    return {success:true};
+  }catch(e){
+    console.log(e);
+    return {success:false};
+  }
+}

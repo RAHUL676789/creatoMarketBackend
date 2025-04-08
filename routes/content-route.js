@@ -1,6 +1,6 @@
 const express = require("express");
 const { contentScheaValidation, isLoggedIn, isOwnerOfContent } = require("../middlewares");
-const { create, update,deleteContent, CancelContent,getAll} = require("../controllers/contentControllers");
+const { create, update,deleteContent, CancelContent,getAll, likes} = require("../controllers/contentControllers");
 const Router = express.Router({mergeParams:true});
 const {asynwrap} = require("../utils/asynwrap")
 
@@ -19,6 +19,9 @@ Router.route("/delete")
 Router.route("/Cancel")
 .delete(isLoggedIn,asynwrap(CancelContent));
 
+
+Router.route("/likes")
+.post(asynwrap(likes))
 
 
 module.exports = Router;

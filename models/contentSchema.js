@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const userModel = require("../models/userSchema")
 
 const { Schema } = mongoose;
 
@@ -20,6 +21,7 @@ const contentSchema = new Schema({
     },
     description: {
         type: String,
+        default:""
 
     },
     url: {
@@ -30,9 +32,13 @@ const contentSchema = new Schema({
         type: Number,
         default: 0
     },
-    likes: {
-        type: Number,
-        default: 0
+    likes: [{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Like"
+    }],
+    likeCount:{
+       type:Number,
+       default:0
     },
     comments: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -54,5 +60,14 @@ const contentSchema = new Schema({
 
 
 
+
+
+contentSchema.post("findOneAndDelete",async(data)=>{
+    if(data){
+        console.log(data);
+        const deleteFromUser = await userModel.findByIdAndUpdate(data.owner,{$pull:{contents:data._id}});
+        console.log("deleteFromUser",deleteFromUser);
+    }
+})
 
 module.exports = mongoose.model("content",contentSchema);
